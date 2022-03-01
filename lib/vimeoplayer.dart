@@ -5,7 +5,12 @@ import 'package:video_player/video_player.dart';
 import 'package:flutter/services.dart';
 import 'src/quality_links.dart';
 import 'dart:async';
+import 'package:provider/provider.dart';
+import 'package:booktouxstream/provider/auth.dart';
+import 'package:booktouxstream/provider/watchlist.dart';
+import 'package:booktouxstream/screens/misc/timerLogout.dart';
 import 'src/fullscreen_player.dart';
+import 'dart:math';
 
 //Класс видео плеера
 class VimeoPlayer extends StatefulWidget {
@@ -13,12 +18,19 @@ class VimeoPlayer extends StatefulWidget {
   final bool? autoPlay;
   final bool? looping;
   final int? position;
+  final String? mediaId;
+  final String? userId;
+  final deviceId;
+  
 
   VimeoPlayer({
     required this.id,
     this.autoPlay,
     this.looping,
     this.position,
+    this.mediaId,
+    this.userId,
+    this.deviceId,
     Key? key,
   }) : super(key: key);
 
@@ -29,13 +41,52 @@ class VimeoPlayer extends StatefulWidget {
 
 class _VimeoPlayerState extends State<VimeoPlayer> {
   String _id;
-  bool? autoPlay = false;
-  bool? looping = false;
-  bool _overlay = true;
-  bool fullScreen = false;
+  bool? autoPlay  = false;
+  bool? looping   = false;
   int? position;
+  bool _overlay   = false;
+  var _currentQuality;
+  
+  
+  bool? showId    = true;
+  double? top;
+  double? left;
+  late Timer timer;
+  late Timer overLaytimer;
+  
 
   _VimeoPlayerState(this._id, this.autoPlay, this.looping, this.position);
+
+
+
+
+  void showUserid() async {
+
+  timer = Timer.periodic(Duration(seconds: 30), (timer) {
+  Provider.of<Auth>(context,listen:false).checkActive(widget.deviceId).then((value){
+    if(value == 1){
+      Navigator.of(context).pushReplacement(MaterialPageRoute(builder:(ctx)=>TimerLogout()));
+    }
+  });
+  top  =  double.parse(Random().nextInt(200).toString());
+  left =  double.parse(Random().nextInt(200).toString());
+    if (mounted) {
+      setState(() {
+        showId = !showId!;
+      });
+    }
+  });
+}
+
+
+  void overlayOff() async {
+  overLaytimer = Timer.periodic(Duration(seconds: 5), (timer) {
+    setState(() {
+      _overlay = false;
+    });
+  });
+
+  }
 
   //Custom controller
   VideoPlayerController? _controller;
@@ -56,25 +107,30 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
 
   //Переменные под зоны дабл-тапа
   double doubleTapRMargin = 36;
-  double doubleTapRWidth = 400;
+  double doubleTapRWidth  = 400;
   double doubleTapRHeight = 160;
   double doubleTapLMargin = 10;
-  double doubleTapLWidth = 400;
+  double doubleTapLWidth  = 400;
   double doubleTapLHeight = 160;
 
   @override
   void initState() {
     //Create class
+     
+     overlayOff();
+     showUserid();
     _quality = QualityLinks(_id);
-
-    //Инициализация контроллеров видео при получении данных из Vimeo
+        //Инициализация контроллеров видео при получении данных из Vimeo
     _quality.getQualitiesSync().then((value) {
+      print(value);
       _qualityValues = value;
       _qualityValue = value[value.lastKey()];
       _controller = VideoPlayerController.network(_qualityValue);
       _controller!.setLooping(looping == null ? false : true);
       if (autoPlay!) _controller!.play();
-      initFuture = _controller!.initialize();
+      initFuture = _controller!.initialize().then((value){
+         if(position != null) _controller!.seekTo(Duration(seconds: position!));
+      });
 
       //Обновление состояние приложения и перерисовка
       setState(() {
@@ -82,6 +138,8 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
             [DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
       });
     });
+
+
 
     //На странице видео преимущество за портретной ориентацией
     SystemChrome.setPreferredOrientations(
@@ -94,8 +152,16 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
   //Отрисовываем элементы плеера
   @override
   Widget build(BuildContext context) {
-    return Center(
-        child: Stack(
+    return WillPopScope(
+      onWillPop: () async {
+        int? lastPlay = _controller!.value.position.inSeconds;
+      
+        Provider.of<WatchList>(context,listen: false).watchlistSave(widget.mediaId, lastPlay.toString());
+       
+        return true;
+      },
+      child:Center(
+      child: Stack(
       alignment: AlignmentDirectional.center,
       children: <Widget>[
         GestureDetector(
@@ -139,17 +205,26 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                         margin: EdgeInsets.only(left: videoMargin),
                         child: VideoPlayer(_controller!),
                       ),
+                        if(showId!)
+                        Positioned(
+                        top: top,
+                        left: left,
+                        child:Row(
+                          children: <Widget>[
+                            Image.asset("assets/booktouxlogo.png",height: 20,width: 20,),
+                            Text("Uid: ${widget.userId}",style:TextStyle(fontSize:12)),
+                          ]
+                        ),
+                        ),
+                        
                       _videoOverlay(),
                     ],
                   );
                 } else {
                   return Center(
                       heightFactor: 6,
-                      child: CircularProgressIndicator(
-                        strokeWidth: 4,
-                        valueColor:
-                            AlwaysStoppedAnimation<Color>(Color(0xFF22A3D2)),
-                      ));
+                      child: CircularProgressIndicator(),
+                      );
                 }
               }),
           onTap: () {
@@ -243,7 +318,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
               });
             }),
       ],
-    ));
+    )));
   }
 
   //================================ Quality ================================//
@@ -253,21 +328,27 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
         builder: (BuildContext bc) {
           //Формирования списка качества
           final children = <Widget>[];
-          _qualityValues.forEach((elem, value) => (children.add(new ListTile(
+          _qualityValues.forEach((elem, value){
+            return children.add(new ListTile(
+              selected: _currentQuality.toString() == value.toString(),
+              selectedTileColor: Colors.black,
+              trailing: _currentQuality.toString() == value.toString() ? Icon(Icons.check, color: Colors.green,) : null,
               title: new Text(" ${elem.toString()} fps"),
               onTap: () => {
                     //Обновление состояние приложения и перерисовка
+                   Navigator.pop(context),
                     setState(() {
                       _controller!.pause();
+                      _currentQuality = value;
                       _qualityValue = value;
-                      _controller =
-                          VideoPlayerController.network(_qualityValue);
+                      _controller = VideoPlayerController.network(_qualityValue); 
                       _controller!.setLooping(true);
                       _seek = true;
                       initFuture = _controller!.initialize();
                       _controller!.play();
                     }),
-                  }))));
+                  }));
+                  });
           //Вывод элементов качество списком
           return Container(
             child: Wrap(
@@ -337,7 +418,9 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                               pageBuilder: (BuildContext context, _, __) =>
                                   FullscreenPlayer(
                                       id: _id,
+                                      userId: widget.userId,
                                       autoPlay: true,
+                                      deviceId: widget.deviceId,
                                       controller: _controller,
                                       position:
                                           _controller!.value.position.inSeconds,
@@ -446,6 +529,8 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
 
   @override
   void dispose() {
+    timer.cancel();
+    overLaytimer.cancel();
     _controller!.dispose();
     super.dispose();
   }
