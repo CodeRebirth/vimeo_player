@@ -84,41 +84,94 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
   double? doubleTapLWidthFS  = 700;
   double? doubleTapLHeightFS = 400;
 
-  void showUserid() async {
+  Isolate? _isolateOne;
+  Isolate? _isolateTwo;
 
-  timer = Timer.periodic(Duration(seconds: 30), (timer) {
+  ReceivePort? _receivePortOne;
+  ReceivePort? _receivePortTwo;
+
+
+void _startIsolate() async{
+    _receivePortOne = ReceivePort();
+    _receivePortTwo = ReceivePort();
+    _isolateOne = await Isolate.spawn(
+      _isolateOneFunction,
+      _receivePortOne!.sendPort,
+    );
+    _isolateTwo = await Isolate.spawn(
+      _isolateTwoFunction,
+      _receivePortTwo!.sendPort,
+    );
+
+    _receivePortOne!.listen((data){
+      if(data == 1){
+        overlayOff();
+      }
+    },onDone: (){
+      print("done");
+    });
+
+    _receivePortTwo!.listen((data){
+      if(data == 2){
+        showAndCheck();
+      }
+    },onDone: (){
+      print("done");
+    });
+
+  }
+ static void _isolateOneFunction(SendPort sendPort) async {
+    Timer.periodic(Duration(seconds: 5), (timer) { 
+      sendPort.send(1);
+    });
+  }
+ static void _isolateTwoFunction(SendPort sendPort) async {
+    Timer.periodic(Duration(seconds: 30), (timer) { 
+      sendPort.send(2);
+    });
+  }
+
+
+  void showAndCheck() async { 
   Provider.of<Auth>(context,listen:false).checkActive(widget.deviceId).then((value){
     if(value == 1){
       Navigator.of(context).pushReplacement(MaterialPageRoute(builder:(ctx)=>TimerLogout()));
     }
   });
   top  =  double.parse(Random().nextInt(200).toString());
-  left =  double.parse(Random().nextInt(600).toString());
+  left =  double.parse(Random().nextInt(200).toString());
     if (mounted) {
       setState(() {
         showId = !showId!;
       });
     }
-  });
+}
 
-  }
 
   void overlayOff() async {
-
-  overLaytimer = Timer.periodic(Duration(seconds: 5), (timer) {
     setState(() {
       _overlay = false;
     });
-  });
+  }
 
+  void _stop(){
+    if(_isolateOne != null){
+      _receivePortOne!.close();
+      _isolateOne!.kill(priority: Isolate.immediate);
+      _isolateOne = null;
+    }
+    if(_isolateTwo != null){
+      _receivePortTwo!.close();
+      _isolateTwo!.kill(priority: Isolate.immediate);
+      _isolateTwo = null;
+    }
   }
 
 
   @override
   void initState() {
     //Инициализация контроллеров видео при получении данных из Vimeo
-    showUserid();
-    overlayOff();
+  
     _controller = controller;
     if (autoPlay!) _controller!.play();
 
@@ -135,6 +188,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
     });
 
     super.initState();
+    _startIsolate();
   }
 
   //Ослеживаем пользовательского нажатие назад и переводим
@@ -360,8 +414,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
 
   @override
   void dispose() {
-    timer.cancel();
-    overLaytimer.cancel();
+    _stop();
     super.dispose();
   }
 

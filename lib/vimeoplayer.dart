@@ -5,6 +5,7 @@ import 'package:video_player/video_player.dart';
 import 'package:flutter/services.dart';
 import 'src/quality_links.dart';
 import 'dart:async';
+import 'dart:isolate';
 import 'package:provider/provider.dart';
 import 'package:booktouxstream/provider/auth.dart';
 import 'package:booktouxstream/provider/watchlist.dart';
@@ -57,12 +58,57 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
 
   _VimeoPlayerState(this._id, this.autoPlay, this.looping, this.position);
 
+  
+
+  Isolate? _isolateOne;
+  Isolate? _isolateTwo;
+
+  ReceivePort? _receivePortOne;
+  ReceivePort? _receivePortTwo;
 
 
+void _startIsolate() async{
+    _receivePortOne = ReceivePort();
+    _receivePortTwo = ReceivePort();
+    _isolateOne = await Isolate.spawn(
+      _isolateOneFunction,
+      _receivePortOne!.sendPort,
+    );
+    _isolateTwo = await Isolate.spawn(
+      _isolateTwoFunction,
+      _receivePortTwo!.sendPort,
+    );
 
-  void showUserid() async {
+    _receivePortOne!.listen((data){
+      if(data == 1){
+        overlayOff();
+      }
+    },onDone: (){
+      print("done");
+    });
 
-  timer = Timer.periodic(Duration(seconds: 30), (timer) {
+    _receivePortTwo!.listen((data){
+      if(data == 2){
+        showAndCheck();
+      }
+    },onDone: (){
+      print("done");
+    });
+
+  }
+ static void _isolateOneFunction(SendPort sendPort) async {
+    Timer.periodic(Duration(seconds: 5), (timer) { 
+      sendPort.send(1);
+    });
+  }
+ static void _isolateTwoFunction(SendPort sendPort) async {
+    Timer.periodic(Duration(seconds: 30), (timer) { 
+      sendPort.send(2);
+    });
+  }
+
+
+  void showAndCheck() async { 
   Provider.of<Auth>(context,listen:false).checkActive(widget.deviceId).then((value){
     if(value == 1){
       Navigator.of(context).pushReplacement(MaterialPageRoute(builder:(ctx)=>TimerLogout()));
@@ -75,17 +121,26 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
         showId = !showId!;
       });
     }
-  });
 }
 
 
   void overlayOff() async {
-  overLaytimer = Timer.periodic(Duration(seconds: 5), (timer) {
     setState(() {
       _overlay = false;
     });
-  });
+  }
 
+  void _stop(){
+    if(_isolateOne != null){
+      _receivePortOne!.close();
+      _isolateOne!.kill(priority: Isolate.immediate);
+      _isolateOne = null;
+    }
+    if(_isolateTwo != null){
+      _receivePortTwo!.close();
+      _isolateTwo!.kill(priority: Isolate.immediate);
+      _isolateTwo = null;
+    }
   }
 
   //Custom controller
@@ -117,8 +172,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
   void initState() {
     //Create class
      
-     overlayOff();
-     showUserid();
+  
     _quality = QualityLinks(_id);
         //Инициализация контроллеров видео при получении данных из Vimeo
     _quality.getQualitiesSync().then((value) {
@@ -147,6 +201,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
     SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
 
     super.initState();
+    _startIsolate();
   }
 
   //Отрисовываем элементы плеера
@@ -529,8 +584,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
 
   @override
   void dispose() {
-    timer.cancel();
-    overLaytimer.cancel();
+    _stop();
     _controller!.dispose();
     super.dispose();
   }
