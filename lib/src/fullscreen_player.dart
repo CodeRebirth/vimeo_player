@@ -138,8 +138,8 @@ void _startIsolate() async{
       Navigator.of(context).pushReplacement(MaterialPageRoute(builder:(ctx)=>TimerLogout()));
     }
   });
-  top  =  double.parse(Random().nextInt(200).toString());
-  left =  double.parse(Random().nextInt(200).toString());
+  top  =  double.parse(Random().nextInt(400).toString());
+  left =  double.parse(Random().nextInt(400).toString());
     if (mounted) {
       setState(() {
         showId = !showId!;
@@ -273,8 +273,8 @@ void _startIsolate() async{
                           left: left,
                           child:Row(
                           children: <Widget>[
-                            Image.asset("assets/booktouxlogo.png",height: 20,width: 20,),
-                            Text("Uid: ${widget.userId}",style:TextStyle(fontSize:12)),
+                            Image.asset("assets/booktouxlogo.png",height: 15,width: 15,),
+                            Text("${widget.userId}",style:TextStyle(fontSize:9,color:Colors.grey.withOpacity(0.5))),
                           ]
                           ),
                           ),

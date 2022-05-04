@@ -266,8 +266,8 @@ void _startIsolate() async{
                         left: left,
                         child:Row(
                           children: <Widget>[
-                            Image.asset("assets/booktouxlogo.png",height: 20,width: 20,),
-                            Text("Uid: ${widget.userId}",style:TextStyle(fontSize:12)),
+                            Image.asset("assets/booktouxlogo.png",height: 15,width: 15,),
+                            Text("${widget.userId}",style:TextStyle(fontSize:9,color:Colors.grey.withOpacity(0.5))),
                           ]
                         ),
                         ),
