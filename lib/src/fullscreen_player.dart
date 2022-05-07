@@ -5,6 +5,7 @@ import 'package:video_player/video_player.dart';
 import 'package:flutter/services.dart';
 import 'quality_links.dart';
 import 'dart:math';
+import 'dart:isolate';
 import 'package:provider/provider.dart';
 import 'package:booktouxstream/provider/auth.dart';
 import 'package:booktouxstream/screens/misc/timerLogout.dart';
