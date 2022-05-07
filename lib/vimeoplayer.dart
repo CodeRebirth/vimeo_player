@@ -549,7 +549,7 @@ void _startIsolate() async{
                 child: Text(value.position.inMinutes.toString() +
                     ':' +
                     (value.position.inSeconds - value.position.inMinutes * 60)
-                        .toString()),
+                        .toString(),style:TextStyle(fontSize:10)),
               ),
               Container(
                 height: 20,
@@ -571,7 +571,7 @@ void _startIsolate() async{
                 child: Text(value.duration.inMinutes.toString() +
                     ':' +
                     (value.duration.inSeconds - value.duration.inMinutes * 60)
-                        .toString()),
+                        .toString(),style:TextStyle(fontSize:10)),
               ),
             ],
           );
