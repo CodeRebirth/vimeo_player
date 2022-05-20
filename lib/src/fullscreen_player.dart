@@ -47,11 +47,10 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
   bool? looping = false;
   bool _overlay = true;
   bool fullScreen = true;
-  bool? showId    = true;
+  bool? showId = true;
   double? top;
   double? left;
   late Timer timer;
-
 
   VideoPlayerController? controller;
   VideoPlayerController? _controller;
@@ -75,14 +74,14 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
   //Переменные видео
   double? videoHeight;
   double? videoWidth;
-  late double videoMargin=0;
+  late double videoMargin = 0;
 
   //Переменные под зоны дабл-тапа
-  double doubleTapRMarginFS  = 36;
-  double? doubleTapRWidthFS  = 700;
-  double doubleTapRHeightFS  = 300;
-  double doubleTapLMarginFS  = 10;
-  double? doubleTapLWidthFS  = 700;
+  double doubleTapRMarginFS = 36;
+  double? doubleTapRWidthFS = 700;
+  double doubleTapRHeightFS = 300;
+  double doubleTapLMarginFS = 10;
+  double? doubleTapLWidthFS = 700;
   double? doubleTapLHeightFS = 400;
 
   Isolate? _isolateOne;
@@ -91,8 +90,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
   ReceivePort? _receivePortOne;
   ReceivePort? _receivePortTwo;
 
-
-void _startIsolate() async{
+  void _startIsolate() async {
     _receivePortOne = ReceivePort();
     _receivePortTwo = ReceivePort();
     _isolateOne = await Isolate.spawn(
@@ -104,50 +102,52 @@ void _startIsolate() async{
       _receivePortTwo!.sendPort,
     );
 
-    _receivePortOne!.listen((data){
-      if(data == 1){
+    _receivePortOne!.listen((data) {
+      if (data == 1) {
         overlayOff();
       }
-    },onDone: (){
+    }, onDone: () {
       print("done");
     });
 
-    _receivePortTwo!.listen((data){
-      if(data == 2){
+    _receivePortTwo!.listen((data) {
+      if (data == 2) {
         showAndCheck();
       }
-    },onDone: (){
+    }, onDone: () {
       print("done");
     });
-
   }
- static void _isolateOneFunction(SendPort sendPort) async {
-    Timer.periodic(Duration(seconds: 5), (timer) { 
+
+  static void _isolateOneFunction(SendPort sendPort) async {
+    Timer.periodic(Duration(seconds: 5), (timer) {
       sendPort.send(1);
     });
   }
- static void _isolateTwoFunction(SendPort sendPort) async {
-    Timer.periodic(Duration(seconds: 30), (timer) { 
+
+  static void _isolateTwoFunction(SendPort sendPort) async {
+    Timer.periodic(Duration(seconds: 15), (timer) {
       sendPort.send(2);
     });
   }
 
-
-  void showAndCheck() async { 
-  Provider.of<Auth>(context,listen:false).checkActive(widget.deviceId).then((value){
-    if(value == 1){
-      Navigator.of(context).pushReplacement(MaterialPageRoute(builder:(ctx)=>TimerLogout()));
-    }
-  });
-  top  =  double.parse(Random().nextInt(400).toString());
-  left =  double.parse(Random().nextInt(400).toString());
+  void showAndCheck() async {
+    Provider.of<Auth>(context, listen: false)
+        .checkActive(widget.deviceId)
+        .then((value) {
+      if (value == 1) {
+        Navigator.of(context).pushReplacement(
+            MaterialPageRoute(builder: (ctx) => TimerLogout()));
+      }
+    });
+    top = double.parse(Random().nextInt(400).toString());
+    left = double.parse(Random().nextInt(400).toString());
     if (mounted) {
       setState(() {
         showId = !showId!;
       });
     }
-}
-
+  }
 
   void overlayOff() async {
     setState(() {
@@ -155,24 +155,23 @@ void _startIsolate() async{
     });
   }
 
-  void _stop(){
-    if(_isolateOne != null){
+  void _stop() {
+    if (_isolateOne != null) {
       _receivePortOne!.close();
       _isolateOne!.kill(priority: Isolate.immediate);
       _isolateOne = null;
     }
-    if(_isolateTwo != null){
+    if (_isolateTwo != null) {
       _receivePortTwo!.close();
       _isolateTwo!.kill(priority: Isolate.immediate);
       _isolateTwo = null;
     }
   }
 
-
   @override
   void initState() {
     //Инициализация контроллеров видео при получении данных из Vimeo
-  
+
     _controller = controller;
     if (autoPlay!) _controller!.play();
 
@@ -211,172 +210,178 @@ void _startIsolate() async{
     return WillPopScope(
         onWillPop: _onWillPop,
         child: Scaffold(
-          backgroundColor: Colors.black,
-          body: Center(
-          child: Stack(
-          alignment: AlignmentDirectional.center,
-          children: <Widget>[
-            GestureDetector(
-              child: FutureBuilder(
-                  future: initFuture,
-                  builder: (context, snapshot) {
-                    if (snapshot.connectionState == ConnectionState.done) {
-                      //Управление шириной и высотой видео
-                      double delta = MediaQuery.of(context).size.width -
-                          MediaQuery.of(context).size.height *
-                              _controller!.value.aspectRatio;
-                      if (MediaQuery.of(context).orientation ==
-                              Orientation.portrait ||
-                          delta < 0) {
-                        videoHeight = MediaQuery.of(context).size.width /
-                            _controller!.value.aspectRatio;
-                        videoWidth = MediaQuery.of(context).size.width;
-                        videoMargin = 0;
-                      } else {
-                        videoHeight = MediaQuery.of(context).size.height;
-                        videoWidth = MediaQuery.of(context).size.width;
-                        
-                        
-                      }
-                      //Переменные дабл тапа, зависимые от размеров видео
-                      doubleTapRWidthFS = videoWidth;
-                      doubleTapRHeightFS = videoHeight! - 36;
-                      doubleTapLWidthFS = videoWidth;
-                      doubleTapLHeightFS = videoHeight;
+            backgroundColor: Colors.black,
+            body: Center(
+                child: Stack(
+              alignment: AlignmentDirectional.center,
+              children: <Widget>[
+                GestureDetector(
+                  child: FutureBuilder(
+                      future: initFuture,
+                      builder: (context, snapshot) {
+                        if (snapshot.connectionState == ConnectionState.done) {
+                          //Управление шириной и высотой видео
+                          double delta = MediaQuery.of(context).size.width -
+                              MediaQuery.of(context).size.height *
+                                  _controller!.value.aspectRatio;
+                          if (MediaQuery.of(context).orientation ==
+                                  Orientation.portrait ||
+                              delta < 0) {
+                            videoHeight = MediaQuery.of(context).size.width /
+                                _controller!.value.aspectRatio;
+                            videoWidth = MediaQuery.of(context).size.width;
+                            videoMargin = 0;
+                          } else {
+                            videoHeight = MediaQuery.of(context).size.height;
+                            videoWidth = MediaQuery.of(context).size.width;
+                          }
+                          //Переменные дабл тапа, зависимые от размеров видео
+                          doubleTapRWidthFS = videoWidth;
+                          doubleTapRHeightFS = videoHeight! - 36;
+                          doubleTapLWidthFS = videoWidth;
+                          doubleTapLHeightFS = videoHeight;
 
-                      //Сразу при входе в режим фуллскрин перематываем
-                      // на нужное место
-                      if (_seek && fullScreen) {
-                        _controller!.seekTo(Duration(seconds: position!));
-                        _seek = false;
-                      }
+                          //Сразу при входе в режим фуллскрин перематываем
+                          // на нужное место
+                          if (_seek && fullScreen) {
+                            _controller!.seekTo(Duration(seconds: position!));
+                            _seek = false;
+                          }
 
-                      //Переходи на нужное место при смене качества
-                      if (_seek && _controller!.value.duration.inSeconds > 2) {
-                        _controller!.seekTo(Duration(seconds: position!));
-                        _seek = false;
-                      }
-                      
+                          //Переходи на нужное место при смене качества
+                          if (_seek &&
+                              _controller!.value.duration.inSeconds > 2) {
+                            _controller!.seekTo(Duration(seconds: position!));
+                            _seek = false;
+                          }
 
-                      //Отрисовка элементов плеера
-                      return Stack(
-                        children: <Widget>[
-                          Positioned.fill(
-                            child:Container(
-                            height: videoHeight,
-                            width: videoWidth,
-                            alignment: Alignment.center,
-                            child: Center(child:VideoPlayer(_controller!)),
-                          )),
-                          if(showId!)
-                          Positioned(
-                          top: top,
-                          left: left,
-                          child:Row(
-                          children: <Widget>[
-                            Image.asset("assets/booktouxlogo.png",height: 15,width: 15,),
-                            Text("${widget.userId}",style:TextStyle(fontSize:9,color:Colors.grey.withOpacity(0.5))),
-                          ]
-                          ),
-                          ),
-                          _videoOverlay(),
-                        ],
-                      );
-                    } else {
-                      return Center(
-                          heightFactor: 6,
-                          child: CircularProgressIndicator());
-                    }
-                  }),
-              //Редактируем размер области дабл тапа при показе оверлея.
-              // Сделано для открытия кнопок "Во весь экран" и "Качество"
-              onTap: () {
-                setState(() {
-                  _overlay = !_overlay;
-                  if (_overlay) {
-                    doubleTapRHeightFS = videoHeight! - 36;
-                    doubleTapLHeightFS = videoHeight! - 10;
-                    doubleTapRMarginFS = 36;
-                    doubleTapLMarginFS = 10;
-                  } else if (!_overlay) {
-                    doubleTapRHeightFS = videoHeight! + 36;
-                    doubleTapLHeightFS = videoHeight;
-                    doubleTapRMarginFS = 0;
-                    doubleTapLMarginFS = 0;
-                  }
-                });
-              },
-            ),
-            GestureDetector(
-                child: Container(
-                  width: doubleTapLWidthFS! / 2 - 30,
-                  height: doubleTapLHeightFS! - 44,
-                  margin:
-                      EdgeInsets.fromLTRB(0, 0, doubleTapLWidthFS! / 2 + 30, 40),
-                  decoration: BoxDecoration(
-                    //color: Colors.red,
-                  ),
+                          //Отрисовка элементов плеера
+                          return Stack(
+                            children: <Widget>[
+                              Positioned.fill(
+                                  child: Container(
+                                height: videoHeight,
+                                width: videoWidth,
+                                alignment: Alignment.center,
+                                child: Center(child: VideoPlayer(_controller!)),
+                              )),
+                              if (showId!)
+                                Positioned(
+                                  top: top,
+                                  left: left,
+                                  child: Row(children: <Widget>[
+                                    Image.asset(
+                                      "assets/icons/1.png",
+                                      height: 15,
+                                      width: 15,
+                                    ),
+                                    Text("${widget.userId}",
+                                        style: TextStyle(
+                                            fontSize: 9,
+                                            color:
+                                                Colors.grey.withOpacity(0.5))),
+                                  ]),
+                                ),
+                              _videoOverlay(),
+                            ],
+                          );
+                        } else {
+                          return Center(
+                              heightFactor: 6,
+                              child: CircularProgressIndicator());
+                        }
+                      }),
+                  //Редактируем размер области дабл тапа при показе оверлея.
+                  // Сделано для открытия кнопок "Во весь экран" и "Качество"
+                  onTap: () {
+                    setState(() {
+                      _overlay = !_overlay;
+                      if (_overlay) {
+                        doubleTapRHeightFS = videoHeight! - 36;
+                        doubleTapLHeightFS = videoHeight! - 10;
+                        doubleTapRMarginFS = 36;
+                        doubleTapLMarginFS = 10;
+                      } else if (!_overlay) {
+                        doubleTapRHeightFS = videoHeight! + 36;
+                        doubleTapLHeightFS = videoHeight;
+                        doubleTapRMarginFS = 0;
+                        doubleTapLMarginFS = 0;
+                      }
+                    });
+                  },
                 ),
-                //Редактируем размер области дабл тапа при показе оверлея.
-                // Сделано для открытия кнопок "Во весь экран" и "Качество"
-                onTap: () {
-                  setState(() {
-                    _overlay = !_overlay;
-                    if (_overlay) {
-                      doubleTapRHeightFS = videoHeight! - 36;
-                      doubleTapLHeightFS = videoHeight! - 10;
-                      doubleTapRMarginFS = 36;
-                      doubleTapLMarginFS = 10;
-                    } else if (!_overlay) {
-                      doubleTapRHeightFS = videoHeight! + 36;
-                      doubleTapLHeightFS = videoHeight;
-                      doubleTapRMarginFS = 0;
-                      doubleTapLMarginFS = 0;
-                    }
-                  });
-                },
-                onDoubleTap: () {
-                  setState(() {
-                    _controller!.seekTo(Duration(
-                        seconds: _controller!.value.position.inSeconds - 10));
-                  });
-                }),
-            GestureDetector(
-                child: Container(
-                  width: doubleTapRWidthFS! / 2 - 45,
-                  height: doubleTapRHeightFS - 80,
-                  margin: EdgeInsets.fromLTRB(doubleTapRWidthFS! / 2 + 45, 0, 0,
-                      doubleTapLMarginFS + 20),
-                  decoration: BoxDecoration(
-                    //color: Colors.red,
-                  ),
-                ),
-                //Редактируем размер области дабл тапа при показе оверлея.
-                // Сделано для открытия кнопок "Во весь экран" и "Качество"
-                onTap: () {
-                  setState(() {
-                    _overlay = !_overlay;
-                    if (_overlay) {
-                      doubleTapRHeightFS = videoHeight! - 36;
-                      doubleTapLHeightFS = videoHeight! - 10;
-                      doubleTapRMarginFS = 36;
-                      doubleTapLMarginFS = 10;
-                    } else if (!_overlay) {
-                      doubleTapRHeightFS = videoHeight! + 36;
-                      doubleTapLHeightFS = videoHeight;
-                      doubleTapRMarginFS = 0;
-                      doubleTapLMarginFS = 0;
-                    }
-                  });
-                },
-                onDoubleTap: () {
-                  setState(() {
-                    _controller!.seekTo(Duration(
-                        seconds: _controller!.value.position.inSeconds + 10));
-                  });
-                }),
-          ],
-        ))));
+                GestureDetector(
+                    child: Container(
+                      width: doubleTapLWidthFS! / 2 - 30,
+                      height: doubleTapLHeightFS! - 44,
+                      margin: EdgeInsets.fromLTRB(
+                          0, 0, doubleTapLWidthFS! / 2 + 30, 40),
+                      decoration: BoxDecoration(
+                          //color: Colors.red,
+                          ),
+                    ),
+                    //Редактируем размер области дабл тапа при показе оверлея.
+                    // Сделано для открытия кнопок "Во весь экран" и "Качество"
+                    onTap: () {
+                      setState(() {
+                        _overlay = !_overlay;
+                        if (_overlay) {
+                          doubleTapRHeightFS = videoHeight! - 36;
+                          doubleTapLHeightFS = videoHeight! - 10;
+                          doubleTapRMarginFS = 36;
+                          doubleTapLMarginFS = 10;
+                        } else if (!_overlay) {
+                          doubleTapRHeightFS = videoHeight! + 36;
+                          doubleTapLHeightFS = videoHeight;
+                          doubleTapRMarginFS = 0;
+                          doubleTapLMarginFS = 0;
+                        }
+                      });
+                    },
+                    onDoubleTap: () {
+                      setState(() {
+                        _controller!.seekTo(Duration(
+                            seconds:
+                                _controller!.value.position.inSeconds - 10));
+                      });
+                    }),
+                GestureDetector(
+                    child: Container(
+                      width: doubleTapRWidthFS! / 2 - 45,
+                      height: doubleTapRHeightFS - 80,
+                      margin: EdgeInsets.fromLTRB(doubleTapRWidthFS! / 2 + 45,
+                          0, 0, doubleTapLMarginFS + 20),
+                      decoration: BoxDecoration(
+                          //color: Colors.red,
+                          ),
+                    ),
+                    //Редактируем размер области дабл тапа при показе оверлея.
+                    // Сделано для открытия кнопок "Во весь экран" и "Качество"
+                    onTap: () {
+                      setState(() {
+                        _overlay = !_overlay;
+                        if (_overlay) {
+                          doubleTapRHeightFS = videoHeight! - 36;
+                          doubleTapLHeightFS = videoHeight! - 10;
+                          doubleTapRMarginFS = 36;
+                          doubleTapLMarginFS = 10;
+                        } else if (!_overlay) {
+                          doubleTapRHeightFS = videoHeight! + 36;
+                          doubleTapLHeightFS = videoHeight;
+                          doubleTapRMarginFS = 0;
+                          doubleTapLMarginFS = 0;
+                        }
+                      });
+                    },
+                    onDoubleTap: () {
+                      setState(() {
+                        _controller!.seekTo(Duration(
+                            seconds:
+                                _controller!.value.position.inSeconds + 10));
+                      });
+                    }),
+              ],
+            ))));
   }
 
   //================================ Quality ================================//
@@ -387,8 +392,13 @@ void _startIsolate() async{
           final children = <Widget>[];
           _qualityValues.forEach((elem, value) => (children.add(new ListTile(
               selected: qualityValue.toString() == value.toString(),
-               selectedTileColor: Colors.black,
-               trailing: qualityValue.toString() == value.toString() ? Icon(Icons.check, color: Colors.green,) : null,
+              selectedTileColor: Colors.black,
+              trailing: qualityValue.toString() == value.toString()
+                  ? Icon(
+                      Icons.check,
+                      color: Colors.green,
+                    )
+                  : null,
               title: new Text(" ${elem.toString()} fps"),
               onTap: () => {
                     //Обновление состояние приложения и перерисовка
@@ -429,7 +439,6 @@ void _startIsolate() async{
                   child: Container(
                     width: MediaQuery.of(context).size.width,
                     height: MediaQuery.of(context).size.height,
-                   
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
                         begin: Alignment.centerRight,
@@ -462,7 +471,8 @@ void _startIsolate() async{
               ),
               Container(
                 margin: EdgeInsets.only(
-                    top: videoHeight! + videoMargin - 55, left: videoWidth! + videoMargin - 50),
+                    top: videoHeight! + videoMargin - 55,
+                    left: videoWidth! + videoMargin - 50),
                 child: IconButton(
                     alignment: AlignmentDirectional.center,
                     icon: Icon(Icons.fullscreen, size: 30.0),
@@ -513,10 +523,13 @@ void _startIsolate() async{
               Container(
                 width: 46,
                 alignment: Alignment(0, 0),
-                child: Text(value.position.inMinutes.toString() +
-                    ':' +
-                    (value.position.inSeconds - value.position.inMinutes * 60)
-                        .toString(),style:TextStyle(fontSize:10)),
+                child: Text(
+                    value.position.inMinutes.toString() +
+                        ':' +
+                        (value.position.inSeconds -
+                                value.position.inMinutes * 60)
+                            .toString(),
+                    style: TextStyle(fontSize: 10)),
               ),
               Container(
                 height: 20,
@@ -535,10 +548,13 @@ void _startIsolate() async{
               Container(
                 width: 46,
                 alignment: Alignment(0, 0),
-                child: Text(value.duration.inMinutes.toString() +
-                    ':' +
-                    (value.duration.inSeconds - value.duration.inMinutes * 60)
-                        .toString(),style:TextStyle(fontSize:10)),
+                child: Text(
+                    value.duration.inMinutes.toString() +
+                        ':' +
+                        (value.duration.inSeconds -
+                                value.duration.inMinutes * 60)
+                            .toString(),
+                    style: TextStyle(fontSize: 10)),
               ),
             ],
           );
