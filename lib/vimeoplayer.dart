@@ -22,6 +22,7 @@ class VimeoPlayer extends StatefulWidget {
   final String? mediaId;
   final String? userId;
   final deviceId;
+  final Function? getTime;
 
   VimeoPlayer({
     required this.id,
@@ -31,6 +32,7 @@ class VimeoPlayer extends StatefulWidget {
     this.mediaId,
     this.userId,
     this.deviceId,
+    this.getTime,
     Key? key,
   }) : super(key: key);
 
@@ -179,6 +181,12 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
       if (autoPlay!) _controller!.play();
       initFuture = _controller!.initialize().then((value) {
         if (position != null) _controller!.seekTo(Duration(seconds: position!));
+      });
+
+      _controller!.addListener(() {
+        if (_controller!.value.isPlaying) {
+          widget.getTime!(_controller!.value.position.inSeconds);
+        }
       });
 
       //Обновление состояние приложения и перерисовка
@@ -510,6 +518,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                     icon: Icon(Icons.settings, size: 26.0),
                     onPressed: () {
                       position = _controller!.value.position.inSeconds;
+
                       _seek = true;
                       _settingModalBottomSheet(context);
                       setState(() {});
