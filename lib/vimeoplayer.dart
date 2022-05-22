@@ -1,5 +1,7 @@
 library vimeoplayer;
 
+import 'dart:html';
+
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter/services.dart';
@@ -183,11 +185,13 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
         if (position != null) _controller!.seekTo(Duration(seconds: position!));
       });
 
-      _controller!.addListener(() {
-        if (_controller!.value.isPlaying) {
-          widget.getTime!(_controller!.value.position.inSeconds);
-        }
-      });
+      if (widget.getTime != null) {
+        _controller!.addListener(() {
+          if (_controller!.value.isPlaying) {
+            widget.getTime!(_controller!.value.position.inSeconds);
+          }
+        });
+      }
 
       //Обновление состояние приложения и перерисовка
       setState(() {
