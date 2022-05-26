@@ -1,6 +1,5 @@
 library vimeoplayer;
 
-
 import 'package:flutter/material.dart';
 import 'package:video_player/video_player.dart';
 import 'package:flutter/services.dart';
@@ -106,14 +105,14 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
   }
 
   void showAndCheck() async {
-    Provider.of<Auth>(context, listen: false)
-        .checkActive(widget.deviceId)
-        .then((value) {
-      if (value == 1) {
-        Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (ctx) => TimerLogout()));
-      }
-    });
+    // Provider.of<Auth>(context, listen: false)
+    //     .checkActive(widget.deviceId)
+    //     .then((value) {
+    //   if (value == 1) {
+    //     Navigator.of(context).pushReplacement(
+    //         MaterialPageRoute(builder: (ctx) => TimerLogout()));
+    //   }
+    // });
     top = double.parse(Random().nextInt(200).toString());
     left = double.parse(Random().nextInt(200).toString());
     if (mounted) {
@@ -274,12 +273,12 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                               child: Row(children: <Widget>[
                                 Image.asset(
                                   "assets/icons/1.png",
-                                  height: 15,
-                                  width: 15,
+                                  height: 35,
+                                  width: 35,
                                 ),
                                 Text("${widget.userId}",
                                     style: TextStyle(
-                                        fontSize: 9,
+                                        fontSize: 13,
                                         color: Colors.grey.withOpacity(0.5))),
                               ]),
                             ),

@@ -132,16 +132,8 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
   }
 
   void showAndCheck() async {
-    Provider.of<Auth>(context, listen: false)
-        .checkActive(widget.deviceId)
-        .then((value) {
-      if (value == 1) {
-        Navigator.of(context).pushReplacement(
-            MaterialPageRoute(builder: (ctx) => TimerLogout()));
-      }
-    });
-    top = double.parse(Random().nextInt(400).toString());
-    left = double.parse(Random().nextInt(400).toString());
+    top = double.parse(Random().nextInt(500).toString());
+    left = double.parse(Random().nextInt(500).toString());
     if (mounted) {
       setState(() {
         showId = !showId!;
@@ -272,12 +264,12 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                                   child: Row(children: <Widget>[
                                     Image.asset(
                                       "assets/icons/1.png",
-                                      height: 15,
-                                      width: 15,
+                                      height: 35,
+                                      width: 35,
                                     ),
                                     Text("${widget.userId}",
                                         style: TextStyle(
-                                            fontSize: 9,
+                                            fontSize: 13,
                                             color:
                                                 Colors.grey.withOpacity(0.5))),
                                   ]),
