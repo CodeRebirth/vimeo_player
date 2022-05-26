@@ -186,7 +186,8 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
       if (widget.getTime != null) {
         _controller!.addListener(() {
           if (_controller!.value.isPlaying) {
-            widget.getTime!(_controller!.value.position.inSeconds);
+            widget.getTime!(_controller!.value.position.inSeconds,
+                _controller!.value.size.height, _controller!.value.size.width);
           }
         });
       }
