@@ -250,13 +250,16 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                           //Отрисовка элементов плеера
                           return Stack(
                             children: <Widget>[
-                              Positioned.fill(
-                                  child: Container(
-                                height: videoHeight,
-                                width: videoWidth,
-                                alignment: Alignment.center,
-                                child: Center(child: VideoPlayer(_controller!)),
-                              )),
+                              SizedBox.expand(
+                                child: FittedBox(
+                                  fit: BoxFit.cover,
+                                  child: SizedBox(
+                                    width: _controller!.value.size.width,
+                                    height: _controller!.value.size.height,
+                                    child: VideoPlayer(_controller!),
+                                  ),
+                                ),
+                              ),
                               if (showId!)
                                 Positioned(
                                   top: top,
