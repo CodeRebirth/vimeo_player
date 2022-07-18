@@ -37,8 +37,7 @@ class FullscreenPlayer extends StatefulWidget {
   }) : super(key: key);
 
   @override
-  _FullscreenPlayerState createState() => _FullscreenPlayerState(
-      id, autoPlay, looping, controller, position, initFuture, qualityValue);
+  _FullscreenPlayerState createState() => _FullscreenPlayerState(id, autoPlay, looping, controller, position, initFuture, qualityValue);
 }
 
 class _FullscreenPlayerState extends State<FullscreenPlayer> {
@@ -60,8 +59,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
   Future<void>? initFuture;
   var qualityValue;
 
-  _FullscreenPlayerState(this._id, this.autoPlay, this.looping, this.controller,
-      this.position, this.initFuture, this.qualityValue);
+  _FullscreenPlayerState(this._id, this.autoPlay, this.looping, this.controller, this.position, this.initFuture, this.qualityValue);
 
   // Quality Class
   late QualityLinks _quality;
@@ -165,7 +163,6 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
     //Инициализация контроллеров видео при получении данных из Vimeo
 
     _controller = controller;
-    if (autoPlay!) _controller!.play();
 
     // Подгрузка списка качеств видео
     _quality = QualityLinks(_id); //Create class
@@ -174,8 +171,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
     });
 
     setState(() {
-      SystemChrome.setPreferredOrientations(
-          [DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
+      SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
       SystemChrome.setEnabledSystemUIOverlays([]);
     });
 
@@ -188,10 +184,8 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
   Future<bool> _onWillPop() {
     setState(() {
       _controller!.pause();
-      SystemChrome.setPreferredOrientations(
-          [DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
-      SystemChrome.setEnabledSystemUIOverlays(
-          [SystemUiOverlay.top, SystemUiOverlay.bottom]);
+      SystemChrome.setPreferredOrientations([DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
+      SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.top, SystemUiOverlay.bottom]);
     });
     Navigator.pop(context, _controller!.value.position.inSeconds);
     return Future.value(true);
@@ -213,14 +207,9 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                       builder: (context, snapshot) {
                         if (snapshot.connectionState == ConnectionState.done) {
                           //Управление шириной и высотой видео
-                          double delta = MediaQuery.of(context).size.width -
-                              MediaQuery.of(context).size.height *
-                                  _controller!.value.aspectRatio;
-                          if (MediaQuery.of(context).orientation ==
-                                  Orientation.portrait ||
-                              delta < 0) {
-                            videoHeight = MediaQuery.of(context).size.width /
-                                _controller!.value.aspectRatio;
+                          double delta = MediaQuery.of(context).size.width - MediaQuery.of(context).size.height * _controller!.value.aspectRatio;
+                          if (MediaQuery.of(context).orientation == Orientation.portrait || delta < 0) {
+                            videoHeight = MediaQuery.of(context).size.width / _controller!.value.aspectRatio;
                             videoWidth = MediaQuery.of(context).size.width;
                             videoMargin = 0;
                           } else {
@@ -241,8 +230,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                           }
 
                           //Переходи на нужное место при смене качества
-                          if (_seek &&
-                              _controller!.value.duration.inSeconds > 2) {
+                          if (_seek && _controller!.value.duration.inSeconds > 2) {
                             _controller!.seekTo(Duration(seconds: position!));
                             _seek = false;
                           }
@@ -270,20 +258,14 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                                       height: 35,
                                       width: 35,
                                     ),
-                                    Text("${widget.userId}",
-                                        style: TextStyle(
-                                            fontSize: 13,
-                                            color:
-                                                Colors.grey.withOpacity(0.5))),
+                                    Text("${widget.userId}", style: TextStyle(fontSize: 13, color: Colors.grey.withOpacity(0.5))),
                                   ]),
                                 ),
                               _videoOverlay(),
                             ],
                           );
                         } else {
-                          return Center(
-                              heightFactor: 6,
-                              child: CircularProgressIndicator());
+                          return Center(heightFactor: 6, child: CircularProgressIndicator());
                         }
                       }),
                   //Редактируем размер области дабл тапа при показе оверлея.
@@ -309,8 +291,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                     child: Container(
                       width: doubleTapLWidthFS! / 2 - 30,
                       height: doubleTapLHeightFS! - 44,
-                      margin: EdgeInsets.fromLTRB(
-                          0, 0, doubleTapLWidthFS! / 2 + 30, 40),
+                      margin: EdgeInsets.fromLTRB(0, 0, doubleTapLWidthFS! / 2 + 30, 40),
                       decoration: BoxDecoration(
                           //color: Colors.red,
                           ),
@@ -335,17 +316,14 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                     },
                     onDoubleTap: () {
                       setState(() {
-                        _controller!.seekTo(Duration(
-                            seconds:
-                                _controller!.value.position.inSeconds - 10));
+                        _controller!.seekTo(Duration(seconds: _controller!.value.position.inSeconds - 10));
                       });
                     }),
                 GestureDetector(
                     child: Container(
                       width: doubleTapRWidthFS! / 2 - 45,
                       height: doubleTapRHeightFS - 80,
-                      margin: EdgeInsets.fromLTRB(doubleTapRWidthFS! / 2 + 45,
-                          0, 0, doubleTapLMarginFS + 20),
+                      margin: EdgeInsets.fromLTRB(doubleTapRWidthFS! / 2 + 45, 0, 0, doubleTapLMarginFS + 20),
                       decoration: BoxDecoration(
                           //color: Colors.red,
                           ),
@@ -370,9 +348,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                     },
                     onDoubleTap: () {
                       setState(() {
-                        _controller!.seekTo(Duration(
-                            seconds:
-                                _controller!.value.position.inSeconds + 10));
+                        _controller!.seekTo(Duration(seconds: _controller!.value.position.inSeconds + 10));
                       });
                     }),
               ],
@@ -438,10 +414,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                       gradient: LinearGradient(
                         begin: Alignment.centerRight,
                         end: Alignment.centerLeft,
-                        colors: [
-                          const Color(0x662F2C47),
-                          const Color(0x662F2C47)
-                        ],
+                        colors: [const Color(0x662F2C47), const Color(0x662F2C47)],
                       ),
                     ),
                   ),
@@ -453,36 +426,25 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                       top: videoHeight! / 2 - 50,
                       bottom: videoHeight! / 2 - 30,
                     ),
-                    icon: _controller!.value.isPlaying
-                        ? Icon(Icons.pause, size: 60.0)
-                        : Icon(Icons.play_arrow, size: 60.0),
+                    icon: _controller!.value.isPlaying ? Icon(Icons.pause, size: 60.0) : Icon(Icons.play_arrow, size: 60.0),
                     onPressed: () {
                       setState(() {
-                        _controller!.value.isPlaying
-                            ? _controller!.pause()
-                            : _controller!.play();
+                        _controller!.value.isPlaying ? _controller!.pause() : _controller!.play();
                       });
                     }),
               ),
               Container(
-                margin: EdgeInsets.only(
-                    top: videoHeight! + videoMargin - 55,
-                    left: videoWidth! + videoMargin - 50),
+                margin: EdgeInsets.only(top: videoHeight! + videoMargin - 55, left: videoWidth! + videoMargin - 50),
                 child: IconButton(
                     alignment: AlignmentDirectional.center,
                     icon: Icon(Icons.fullscreen, size: 30.0),
                     onPressed: () {
                       setState(() {
                         _controller!.pause();
-                        SystemChrome.setPreferredOrientations([
-                          DeviceOrientation.portraitDown,
-                          DeviceOrientation.portraitUp
-                        ]);
-                        SystemChrome.setEnabledSystemUIOverlays(
-                            [SystemUiOverlay.top, SystemUiOverlay.bottom]);
+                        SystemChrome.setPreferredOrientations([DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
+                        SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.top, SystemUiOverlay.bottom]);
                       });
-                      Navigator.pop(
-                          context, _controller!.value.position.inSeconds);
+                      Navigator.pop(context, _controller!.value.position.inSeconds);
                     }),
               ),
               Container(
@@ -498,8 +460,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
               ),
               Container(
                 //===== Ползунок =====//
-                margin: EdgeInsets.only(
-                    top: videoHeight! - 25, left: videoMargin), //CHECK IT
+                margin: EdgeInsets.only(top: videoHeight! - 25, left: videoMargin), //CHECK IT
                 child: _videoOverlaySlider(),
               )
             ],
@@ -518,13 +479,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
               Container(
                 width: 46,
                 alignment: Alignment(0, 0),
-                child: Text(
-                    value.position.inMinutes.toString() +
-                        ':' +
-                        (value.position.inSeconds -
-                                value.position.inMinutes * 60)
-                            .toString(),
-                    style: TextStyle(fontSize: 10)),
+                child: Text(value.position.inMinutes.toString() + ':' + (value.position.inSeconds - value.position.inMinutes * 60).toString(), style: TextStyle(fontSize: 10)),
               ),
               Container(
                 height: 20,
@@ -543,13 +498,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
               Container(
                 width: 46,
                 alignment: Alignment(0, 0),
-                child: Text(
-                    value.duration.inMinutes.toString() +
-                        ':' +
-                        (value.duration.inSeconds -
-                                value.duration.inMinutes * 60)
-                            .toString(),
-                    style: TextStyle(fontSize: 10)),
+                child: Text(value.duration.inMinutes.toString() + ':' + (value.duration.inSeconds - value.duration.inMinutes * 60).toString(), style: TextStyle(fontSize: 10)),
               ),
             ],
           );
