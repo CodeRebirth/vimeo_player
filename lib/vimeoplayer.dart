@@ -10,6 +10,7 @@ import 'package:provider/provider.dart';
 import 'package:booktouxstream/provider/auth.dart';
 import 'package:booktouxstream/provider/watchlist.dart';
 import 'package:booktouxstream/screens/misc/timerLogout.dart';
+import 'package:subtitle_wrapper_package/subtitle_wrapper_package.dart';
 import 'src/fullscreen_player.dart';
 import 'dart:math';
 
@@ -22,6 +23,7 @@ class VimeoPlayer extends StatefulWidget {
   final String? mediaId;
   final String? userId;
   final deviceId;
+  final String subtitleUrl;
   final bool? pipMode;
   final Function? getTime;
 
@@ -34,6 +36,7 @@ class VimeoPlayer extends StatefulWidget {
     this.userId,
     this.deviceId,
     this.pipMode,
+    required this.subtitleUrl,
     this.getTime,
     Key? key,
   }) : super(key: key);
@@ -189,6 +192,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                       controller: _controller,
                       position: _controller!.value.position.inSeconds,
                       initFuture: initFuture,
+                      subtitleUrl: widget.subtitleUrl,
                       qualityValue: _qualityValue),
                   transitionsBuilder: (___, Animation<double> animation, ____, Widget child) {
                     return FadeTransition(
@@ -199,16 +203,6 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
         }
       });
 
-      // if (autoPlay!) _controller!.play();
-
-      if (widget.getTime != null) {
-        _controller!.addListener(() {
-          if (_controller!.value.isPlaying) {
-            widget.getTime!(_controller!.value.position.inSeconds, _controller!.value.size.height, _controller!.value.size.width);
-          }
-        });
-      }
-
       //Обновление состояние приложения и перерисовка
       setState(() {
         SystemChrome.setPreferredOrientations([DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
@@ -218,6 +212,16 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
     //На странице видео преимущество за портретной ориентацией
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
     SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
+
+    // if (autoPlay!) _controller!.play();
+
+    if (widget.getTime != null) {
+      _controller!.addListener(() {
+        if (_controller!.value.isPlaying) {
+          widget.getTime!(_controller!.value.position.inSeconds, _controller!.value.size.height, _controller!.value.size.width);
+        }
+      });
+    }
 
     super.initState();
     _startIsolate();
@@ -480,7 +484,8 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                                   userId: widget.userId,
                                   autoPlay: true,
                                   deviceId: widget.deviceId,
-                                  controller: _controller,
+                                  controller: _controller!,
+                                  subtitleUrl: widget.subtitleUrl,
                                   position: _controller!.value.position.inSeconds,
                                   initFuture: initFuture,
                                   qualityValue: _qualityValue),
@@ -497,12 +502,15 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                     }),
               ),
               Container(
+                margin: EdgeInsets.only(left: videoWidth! + videoMargin - 100),
+                child: IconButton(icon: Icon(Icons.subtitles, size: 26.0), onPressed: () {}),
+              ),
+              Container(
                 margin: EdgeInsets.only(left: videoWidth! + videoMargin - 48),
                 child: IconButton(
                     icon: Icon(Icons.settings, size: 26.0),
                     onPressed: () {
                       position = _controller!.value.position.inSeconds;
-
                       _seek = true;
                       _settingModalBottomSheet(context);
                       setState(() {});

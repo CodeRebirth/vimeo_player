@@ -8,6 +8,8 @@ import 'dart:math';
 import 'dart:isolate';
 import 'package:provider/provider.dart';
 import 'package:booktouxstream/provider/auth.dart';
+import 'package:subtitle_wrapper_package/subtitle_wrapper_package.dart';
+
 import 'package:booktouxstream/screens/misc/timerLogout.dart';
 import 'dart:async';
 
@@ -20,6 +22,8 @@ class FullscreenPlayer extends StatefulWidget {
   final String? userId;
   final position;
   final deviceId;
+  final String subtitleUrl;
+  final SubtitleController? subController;
   final Future<void>? initFuture;
   final String? qualityValue;
 
@@ -31,8 +35,10 @@ class FullscreenPlayer extends StatefulWidget {
     this.position,
     this.deviceId,
     this.initFuture,
+    required this.subtitleUrl,
     this.userId,
     this.qualityValue,
+    this.subController,
     Key? key,
   }) : super(key: key);
 
@@ -50,6 +56,8 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
   double? top;
   double? left;
   late Timer timer;
+  bool subShow = true;
+  SubtitleController? subtitleController;
 
   VideoPlayerController? controller;
   VideoPlayerController? _controller;
@@ -160,6 +168,11 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
 
   @override
   void initState() {
+    subtitleController = SubtitleController(
+      subtitleUrl: widget.subtitleUrl,
+      subtitleType: SubtitleType.srt,
+    );
+
     //Инициализация контроллеров видео при получении данных из Vimeo
 
     _controller = controller;
@@ -238,13 +251,21 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                           //Отрисовка элементов плеера
                           return Stack(
                             children: <Widget>[
-                              SizedBox.expand(
-                                child: FittedBox(
-                                  fit: BoxFit.cover,
-                                  child: SizedBox(
-                                    width: _controller!.value.size.width,
-                                    height: _controller!.value.size.height,
-                                    child: VideoPlayer(_controller!),
+                              SubtitleWrapper(
+                                videoPlayerController: _controller!,
+                                subtitleController: subtitleController!,
+                                subtitleStyle: SubtitleStyle(
+                                  textColor: Colors.white,
+                                  hasBorder: true,
+                                ),
+                                videoChild: SizedBox.expand(
+                                  child: FittedBox(
+                                    fit: BoxFit.cover,
+                                    child: SizedBox(
+                                      width: _controller!.value.size.width,
+                                      height: _controller!.value.size.height,
+                                      child: VideoPlayer(_controller!),
+                                    ),
                                   ),
                                 ),
                               ),
@@ -445,6 +466,24 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                         SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.top, SystemUiOverlay.bottom]);
                       });
                       Navigator.pop(context, _controller!.value.position.inSeconds);
+                      Navigator.pop(context);
+                    }),
+              ),
+              Container(
+                margin: EdgeInsets.only(left: videoWidth! + videoMargin - 90),
+                child: IconButton(
+                    icon: Icon(Icons.subtitles, size: 26.0),
+                    onPressed: () {
+                      if (subShow) {
+                        subtitleController!.updateSubtitleUrl(url: "https://alpha.booktou.in/public/assets/upload/subtitle/blank.srt");
+                        subShow = false;
+                      } else {
+                        setState(() {
+                          subtitleController!.updateSubtitleUrl(url: widget.subtitleUrl);
+                          // subtitleController = SubtitleController(showSubtitles: true, subtitleUrl: widget.subtitleUrl);
+                          subShow = true;
+                        });
+                      }
                     }),
               ),
               Container(
