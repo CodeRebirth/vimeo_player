@@ -58,6 +58,8 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
   double? left;
   late Timer timer;
   late Timer overLaytimer;
+  bool subShow = true;
+  SubtitleController? subtitleController;
 
   _VimeoPlayerState(this._id, this.autoPlay, this.looping, this.position);
 
@@ -170,6 +172,11 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
   void initState() {
     //Create class
 
+    subtitleController = SubtitleController(
+      subtitleUrl: widget.subtitleUrl,
+      subtitleType: SubtitleType.srt,
+    );
+
     _quality = QualityLinks(_id);
     //Инициализация контроллеров видео при получении данных из Vimeo
     _quality.getQualitiesSync().then((value) {
@@ -178,6 +185,15 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
       _controller = VideoPlayerController.network(_qualityValue);
       _controller!.setLooping(looping == null ? false : true);
       initFuture = _controller!.initialize().then((value) {
+        if (autoPlay!) _controller!.play();
+        if (widget.getTime != null) {
+          _controller!.addListener(() {
+            if (_controller!.value.isPlaying) {
+              widget.getTime!(_controller!.value.position.inSeconds, _controller!.value.size.height, _controller!.value.size.width);
+            }
+          });
+        }
+
         if (position != null) _controller!.seekTo(Duration(seconds: position!));
         if (!widget.pipMode!) {
           Navigator.push(
@@ -212,16 +228,6 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
     //На странице видео преимущество за портретной ориентацией
     SystemChrome.setPreferredOrientations([DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
     SystemChrome.setEnabledSystemUIOverlays(SystemUiOverlay.values);
-
-    // if (autoPlay!) _controller!.play();
-
-    if (widget.getTime != null) {
-      _controller!.addListener(() {
-        if (_controller!.value.isPlaying) {
-          widget.getTime!(_controller!.value.position.inSeconds, _controller!.value.size.height, _controller!.value.size.width);
-        }
-      });
-    }
 
     super.initState();
     _startIsolate();
@@ -272,11 +278,18 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                       return Stack(
                         children: <Widget>[
                           Container(
-                            height: videoHeight,
-                            width: videoWidth,
-                            margin: EdgeInsets.only(left: videoMargin),
-                            child: VideoPlayer(_controller!),
-                          ),
+                              height: videoHeight,
+                              width: videoWidth,
+                              margin: EdgeInsets.only(left: videoMargin),
+                              child: SubtitleWrapper(
+                                videoPlayerController: _controller!,
+                                subtitleController: subtitleController!,
+                                subtitleStyle: SubtitleStyle(
+                                  textColor: Colors.white,
+                                  hasBorder: true,
+                                ),
+                                videoChild: VideoPlayer(_controller!),
+                              )),
                           if (showId!)
                             Positioned(
                               top: top,
@@ -502,8 +515,22 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                     }),
               ),
               Container(
-                margin: EdgeInsets.only(left: videoWidth! + videoMargin - 100),
-                child: IconButton(icon: Icon(Icons.subtitles, size: 26.0), onPressed: () {}),
+                margin: EdgeInsets.only(left: videoWidth! + videoMargin - 90),
+                child: IconButton(
+                    icon: subShow ? Icon(Icons.subtitles, size: 26.0) : Icon(Icons.subtitles_off),
+                    onPressed: () {
+                      if (subShow) {
+                        subtitleController!.updateSubtitleUrl(url: "https://alpha.booktou.in/public/assets/upload/subtitle/blank.srt");
+                        setState(() {
+                          subShow = false;
+                        });
+                      } else {
+                        setState(() {
+                          subtitleController!.updateSubtitleUrl(url: widget.subtitleUrl);
+                          subShow = true;
+                        });
+                      }
+                    }),
               ),
               Container(
                 margin: EdgeInsets.only(left: videoWidth! + videoMargin - 48),

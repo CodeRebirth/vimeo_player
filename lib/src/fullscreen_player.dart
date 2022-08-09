@@ -182,6 +182,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
     _quality.getQualitiesSync().then((value) {
       _qualityValues = value;
     });
+    _controller!.play();
 
     setState(() {
       SystemChrome.setPreferredOrientations([DeviceOrientation.landscapeLeft, DeviceOrientation.landscapeRight]);
@@ -466,21 +467,21 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                         SystemChrome.setEnabledSystemUIOverlays([SystemUiOverlay.top, SystemUiOverlay.bottom]);
                       });
                       Navigator.pop(context, _controller!.value.position.inSeconds);
-                      Navigator.pop(context);
                     }),
               ),
               Container(
                 margin: EdgeInsets.only(left: videoWidth! + videoMargin - 90),
                 child: IconButton(
-                    icon: Icon(Icons.subtitles, size: 26.0),
+                    icon: subShow ? Icon(Icons.subtitles, size: 26.0) : Icon(Icons.subtitles_off),
                     onPressed: () {
                       if (subShow) {
                         subtitleController!.updateSubtitleUrl(url: "https://alpha.booktou.in/public/assets/upload/subtitle/blank.srt");
-                        subShow = false;
+                        setState(() {
+                          subShow = false;
+                        });
                       } else {
                         setState(() {
                           subtitleController!.updateSubtitleUrl(url: widget.subtitleUrl);
-                          // subtitleController = SubtitleController(showSubtitles: true, subtitleUrl: widget.subtitleUrl);
                           subShow = true;
                         });
                       }
