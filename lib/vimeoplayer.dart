@@ -1,18 +1,20 @@
 library vimeoplayer;
 
-import 'package:flutter/material.dart';
-import 'package:video_player/video_player.dart';
-import 'package:flutter/services.dart';
-import 'src/quality_links.dart';
 import 'dart:async';
 import 'dart:isolate';
-import 'package:provider/provider.dart';
+import 'dart:math';
+
 import 'package:booktouxstream/provider/auth.dart';
 import 'package:booktouxstream/provider/watchlist.dart';
 import 'package:booktouxstream/screens/misc/timerLogout.dart';
+import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
+import 'package:provider/provider.dart';
 import 'package:subtitle_wrapper_package/subtitle_wrapper_package.dart';
+import 'package:video_player/video_player.dart';
+
 import 'src/fullscreen_player.dart';
-import 'dart:math';
+import 'src/quality_links.dart';
 
 //Класс видео плеера
 class VimeoPlayer extends StatefulWidget {
@@ -26,19 +28,21 @@ class VimeoPlayer extends StatefulWidget {
   final String subtitleUrl;
   final bool? pipMode;
   final Function? getTime;
+  final String vimeoToken;
 
   VimeoPlayer({
+    Key? key,
     required this.id,
     this.autoPlay,
     this.looping,
     this.position,
     this.mediaId,
     this.userId,
-    this.deviceId,
-    this.pipMode,
     required this.subtitleUrl,
+    this.pipMode,
     this.getTime,
-    Key? key,
+    required this.vimeoToken,
+    this.deviceId,
   }) : super(key: key);
 
   @override
@@ -179,7 +183,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
 
     _quality = QualityLinks(_id);
     //Инициализация контроллеров видео при получении данных из Vimeo
-    _quality.getQualitiesSync().then((value) {
+    _quality.getQualitiesSync(widget.vimeoToken).then((value) {
       _qualityValues = value;
       _qualityValue = value[value.lastKey()];
       _controller = VideoPlayerController.network(_qualityValue);

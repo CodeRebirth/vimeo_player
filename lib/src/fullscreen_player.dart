@@ -26,6 +26,7 @@ class FullscreenPlayer extends StatefulWidget {
   final SubtitleController? subController;
   final Future<void>? initFuture;
   final String? qualityValue;
+  final String vimeoToken;
 
   FullscreenPlayer({
     required this.id,
@@ -39,6 +40,7 @@ class FullscreenPlayer extends StatefulWidget {
     this.userId,
     this.qualityValue,
     this.subController,
+    required this.vimeoToken,
     Key? key,
   }) : super(key: key);
 
@@ -179,7 +181,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
 
     // Подгрузка списка качеств видео
     _quality = QualityLinks(_id); //Create class
-    _quality.getQualitiesSync().then((value) {
+    _quality.getQualitiesSync(widget.vimeoToken).then((value) {
       _qualityValues = value;
     });
     _controller!.play();
