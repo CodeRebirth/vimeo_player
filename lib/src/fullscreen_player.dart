@@ -477,7 +477,7 @@ class _FullscreenPlayerState extends State<FullscreenPlayer> {
                     icon: subShow ? Icon(Icons.subtitles, size: 26.0) : Icon(Icons.subtitles_off),
                     onPressed: () {
                       if (subShow) {
-                        subtitleController!.updateSubtitleUrl(url: "https://alpha.booktou.in/public/assets/upload/subtitle/blank.srt");
+                        subtitleController!.updateSubtitleUrl(url: "https://booktoux.com/public/assets/upload/blank.srt");
                         setState(() {
                           subShow = false;
                         });

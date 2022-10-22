@@ -213,6 +213,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                       position: _controller!.value.position.inSeconds,
                       initFuture: initFuture,
                       subtitleUrl: widget.subtitleUrl,
+                      vimeoToken: widget.vimeoToken,
                       qualityValue: _qualityValue),
                   transitionsBuilder: (___, Animation<double> animation, ____, Widget child) {
                     return FadeTransition(
@@ -504,6 +505,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                                   controller: _controller!,
                                   subtitleUrl: widget.subtitleUrl,
                                   position: _controller!.value.position.inSeconds,
+                                  vimeoToken: widget.vimeoToken,
                                   initFuture: initFuture,
                                   qualityValue: _qualityValue),
                               transitionsBuilder: (___, Animation<double> animation, ____, Widget child) {
@@ -524,7 +526,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                     icon: subShow ? Icon(Icons.subtitles, size: 26.0) : Icon(Icons.subtitles_off),
                     onPressed: () {
                       if (subShow) {
-                        subtitleController!.updateSubtitleUrl(url: "https://alpha.booktou.in/public/assets/upload/subtitle/blank.srt");
+                        subtitleController!.updateSubtitleUrl(url: "https://booktoux.com/public/assets/upload/blank.srt");
                         setState(() {
                           subShow = false;
                         });
