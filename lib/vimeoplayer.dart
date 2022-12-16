@@ -27,6 +27,7 @@ class VimeoPlayer extends StatefulWidget {
   final deviceId;
   final String subtitleUrl;
   final bool? pipMode;
+  final bool? trailerMode;
   final Function? getTime;
   final String vimeoToken;
 
@@ -40,6 +41,7 @@ class VimeoPlayer extends StatefulWidget {
     this.userId,
     required this.subtitleUrl,
     this.pipMode,
+    this.trailerMode,
     this.getTime,
     required this.vimeoToken,
     this.deviceId,
@@ -199,7 +201,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
         }
 
         if (position != null) _controller!.seekTo(Duration(seconds: position!));
-        if (!widget.pipMode!) {
+        if (!widget.pipMode! || widget.trailerMode == false) {
           Navigator.push(
               context,
               PageRouteBuilder(
@@ -225,9 +227,11 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
       });
 
       //Обновление состояние приложения и перерисовка
-      setState(() {
-        SystemChrome.setPreferredOrientations([DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
-      });
+      if (mounted) {
+        setState(() {
+          SystemChrome.setPreferredOrientations([DeviceOrientation.portraitDown, DeviceOrientation.portraitUp]);
+        });
+      }
     });
 
     //На странице видео преимущество за портретной ориентацией
@@ -251,7 +255,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
         },
         child: Center(
             child: Stack(
-          alignment: AlignmentDirectional.center,
+          // alignment: AlignmentDirectional.center,
           children: <Widget>[
             GestureDetector(
               child: FutureBuilder(
@@ -281,6 +285,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
 
                       //Отрисовка элементов плеера
                       return Stack(
+                        alignment: Alignment.center,
                         children: <Widget>[
                           Container(
                               height: videoHeight,
@@ -454,6 +459,7 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
   Widget _videoOverlay() {
     return _overlay
         ? Stack(
+            alignment: widget.trailerMode! ? Alignment.center : AlignmentDirectional.topStart,
             children: <Widget>[
               GestureDetector(
                 child: Center(
@@ -520,35 +526,37 @@ class _VimeoPlayerState extends State<VimeoPlayer> {
                       });
                     }),
               ),
-              Container(
-                margin: EdgeInsets.only(left: videoWidth! + videoMargin - 90),
-                child: IconButton(
-                    icon: subShow ? Icon(Icons.subtitles, size: 26.0) : Icon(Icons.subtitles_off),
-                    onPressed: () {
-                      if (subShow) {
-                        subtitleController!.updateSubtitleUrl(url: "https://booktoux.com/public/assets/upload/blank.srt");
-                        setState(() {
-                          subShow = false;
-                        });
-                      } else {
-                        setState(() {
-                          subtitleController!.updateSubtitleUrl(url: widget.subtitleUrl);
-                          subShow = true;
-                        });
-                      }
-                    }),
-              ),
-              Container(
-                margin: EdgeInsets.only(left: videoWidth! + videoMargin - 48),
-                child: IconButton(
-                    icon: Icon(Icons.settings, size: 26.0),
-                    onPressed: () {
-                      position = _controller!.value.position.inSeconds;
-                      _seek = true;
-                      _settingModalBottomSheet(context);
-                      setState(() {});
-                    }),
-              ),
+              if (widget.trailerMode == false)
+                Container(
+                  margin: EdgeInsets.only(left: videoWidth! + videoMargin - 90),
+                  child: IconButton(
+                      icon: subShow ? Icon(Icons.subtitles, size: 26.0) : Icon(Icons.subtitles_off),
+                      onPressed: () {
+                        if (subShow) {
+                          subtitleController!.updateSubtitleUrl(url: "https://booktoux.com/public/assets/upload/blank.srt");
+                          setState(() {
+                            subShow = false;
+                          });
+                        } else {
+                          setState(() {
+                            subtitleController!.updateSubtitleUrl(url: widget.subtitleUrl);
+                            subShow = true;
+                          });
+                        }
+                      }),
+                ),
+              if (widget.trailerMode == false)
+                Container(
+                  margin: EdgeInsets.only(left: videoWidth! + videoMargin - 48),
+                  child: IconButton(
+                      icon: Icon(Icons.settings, size: 26.0),
+                      onPressed: () {
+                        position = _controller!.value.position.inSeconds;
+                        _seek = true;
+                        _settingModalBottomSheet(context);
+                        setState(() {});
+                      }),
+                ),
               Container(
                 //===== Ползунок =====//
                 margin: EdgeInsets.only(top: videoHeight! - 26, left: videoMargin), //CHECK IT
